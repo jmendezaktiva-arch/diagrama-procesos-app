@@ -5,14 +5,14 @@ import { getAuth } from "firebase/auth";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
+// Configuración de Firebase protegida con Variables de Entorno
 const firebaseConfig = {
-  apiKey: "",
-  authDomain: "pcs-app-c5fe6.firebaseapp.com",
-  projectId: "pcs-app-c5fe6",
-  storageBucket: "pcs-app-c5fe6.firebasestorage.app",
-  messagingSenderId: "528107952052",
-  appId: "1:528107952052:web:a9aac6f1d32cbcbd1584e1"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 // 1. Inicializamos la App
