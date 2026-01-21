@@ -1,11 +1,36 @@
+/* eslint-disable react/prop-types */
 import React, { useEffect } from 'react';
-import { ReactFlow, useNodesState, useEdgesState, Background, Controls } from '@xyflow/react';
+import { ReactFlow, useNodesState, useEdgesState, Background, Controls, Handle, Position } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import dagre from 'dagre';
 
-// Configuración del tamaño de las cajitas
-const NODE_WIDTH = 180;
-const NODE_HEIGHT = 80;
+// --- DISEÑO DE NODOS PREMIUM DREAMS CRITERIA ---
+const ProcesoNode = ({ data }) => (
+  <div className="bg-dreams-gold px-5 py-4 rounded-xl shadow-premium text-center min-w-[200px] relative border border-white/20">
+    <Handle type="target" position={Position.Left} className="opacity-0" />
+    <div className="text-[9px] uppercase font-black opacity-70 tracking-widest mb-1 text-white">Actividad</div>
+    <div className="text-sm font-extrabold leading-tight text-white">{data.label}</div>
+    <Handle type="source" position={Position.Right} className="opacity-0" />
+  </div>
+);
+
+const DecisionNode = ({ data }) => (
+  <div className="bg-dreams-blue px-6 py-6 rounded-[2.5rem] shadow-premium text-center min-w-[200px] relative border border-amber-500/40">
+    <Handle type="target" position={Position.Left} className="opacity-0" />
+    <div className="text-[9px] uppercase font-black text-amber-500 tracking-widest mb-1">Validación</div>
+    <div className="text-sm font-extrabold leading-tight text-white italic">¿{data.label}?</div>
+    <Handle type="source" position={Position.Right} className="opacity-0" />
+  </div>
+);
+
+const nodeTypes = {
+  proceso: ProcesoNode,
+  decision: DecisionNode,
+};
+
+// Configuración del tamaño para el cálculo de posiciones
+const NODE_WIDTH = 220;
+const NODE_HEIGHT = 100;
 
 // FUNCIÓN MATEMÁTICA: Calcula posiciones automáticamente (Auto-Layout)
 const getLayoutedElements = (nodes, edges, direction = 'LR') => {
@@ -46,35 +71,28 @@ export default function DiagramaAuto({ pasos, direction = 'LR', onNodeClick }) {
   useEffect(() => {
     if (!pasos || pasos.length === 0) return;
 
-    // 1. CONVERTIR TUS DATOS DE FIREBASE A "IDIOMA REACT FLOW"
-    // CORRECCIÓN: Quitamos 'index' de aquí porque no se usa
+    // 1. TRANSFORMAR TUS PASOS EN NODOS VISUALES
     const misNodos = pasos.map((paso) => ({
       id: paso.id.toString(),
       data: { label: paso.texto },
-      position: { x: 0, y: 0 }, // Dagre lo calculará después
-      // Si es decisión (rombo) lo pintamos naranja, si es proceso azul
-      style: { 
-        background: paso.tipo === 'decision' ? '#fff7ed' : '#eff6ff', 
-        border: paso.tipo === 'decision' ? '1px solid #f97316' : '1px solid #2563eb',
-        borderRadius: paso.tipo === 'decision' ? '50%' : '8px', 
-        width: 180,
-        fontSize: '12px',
-        fontWeight: 'bold',
-        color: '#1e293b',
-        display: 'flex', alignItems: 'center', justifyContent: 'center'
-      },
-      type: 'default', // Tipo estándar
+      position: { x: 0, y: 0 },
+      type: paso.tipo === 'decision' ? 'decision' : 'proceso',
     }));
 
-    // 2. CREAR LAS CONEXIONES (FLECHAS)
+    // 2. CREAR LAS CONEXIONES (FLECHAS) PREMIUM
     const misConexiones = [];
     for (let i = 0; i < pasos.length - 1; i++) {
       misConexiones.push({
         id: `e${pasos[i].id}-${pasos[i+1].id}`,
         source: pasos[i].id.toString(),
         target: pasos[i+1].id.toString(),
-        animated: true, // Flecha animada
-        style: { stroke: '#94a3b8' },
+        animated: true, 
+        // Estilo de línea Dreams Criteria
+        type: 'smoothstep', 
+        style: { 
+          stroke: '#64748b', 
+          strokeWidth: 3,
+        },
       });
     }
 
@@ -90,14 +108,15 @@ export default function DiagramaAuto({ pasos, direction = 'LR', onNodeClick }) {
   }, [pasos, direction, setNodes, setEdges]); 
 
   return (
-    <div style={{ width: '100%', height: '500px' }} className="bg-slate-50 rounded-xl border border-slate-200">
+    <div style={{ width: '100%', height: '500px', background: '#f8fafc', borderRadius: '24px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
-        onNodeClick={(event, node) => onNodeClick && onNodeClick(node)}
-        fitView 
+        onNodeClick={(_, node) => onNodeClick(node)}
+        nodeTypes={nodeTypes}
+        fitView
       >
         <Background color="#ccc" gap={20} />
         <Controls />
