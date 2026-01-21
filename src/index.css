@@ -1,0 +1,46 @@
+@import "tailwindcss";
+/* --- DREAMS CRITERIA: PREMIUM VISUAL SYSTEM --- */
+@layer base {
+  :root {
+    /* Dreams Gold: Paleta metálica refinada */
+    --dreams-gold-light: #fbbf24;
+    --dreams-gold-main: #d97706;
+    --dreams-gold-dark: #92400e;
+    
+    /* Deep Blue: Azul corporativo de alta gama */
+    --dreams-blue-deep: #020617;
+    --dreams-blue-slate: #1e293b;
+  }
+}
+
+@layer utilities {
+  /* Gradiente "Dreams Gold" Metálico (Para Procesos Core) */
+  .bg-dreams-gold {
+    background: linear-gradient(145deg, var(--dreams-gold-light) 0%, var(--dreams-gold-main) 50%, var(--dreams-gold-dark) 100%);
+    border: 1px solid rgba(251, 191, 36, 0.5);
+    box-shadow: 0 4px 15px -2px rgba(146, 64, 14, 0.4);
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+
+  /* Gradiente "Dreams Blue" Profundo (Para Apoyo/Entradas) */
+  .bg-dreams-blue {
+    background: linear-gradient(145deg, var(--dreams-blue-slate) 0%, var(--dreams-blue-deep) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 15px -2px rgba(0, 0, 0, 0.5);
+    color: white;
+  }
+
+  /* Efecto de Cristal Dreams (Glassmorphism para paneles) */
+  .dreams-glass {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  /* Tipografía ejecutiva para etiquetas */
+  .text-label-premium {
+    @apply text-[10px] font-black uppercase tracking-[0.15em] text-slate-400;
+  }
+}
