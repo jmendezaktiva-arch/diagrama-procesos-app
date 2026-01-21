@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React, { useState } from 'react';
 import { db } from '../firebase';
 import { collection, addDoc } from 'firebase/firestore';
@@ -7,9 +8,9 @@ export default function Edicion() {
   const [bloque, setBloque] = useState('1');
   const [nivel, setNivel] = useState('N0');
   
-  // CORRECCIÓN AQUÍ: Usamos () => [...] para que Date.now() solo se ejecute una vez
+  // Agregamos Responsable e Icono por defecto en cada paso
   const [pasos, setPasos] = useState(() => [
-    { id: Date.now(), texto: '', instruccion: '', tipo: 'proceso' }
+    { id: Date.now(), texto: '', instruccion: '', tipo: 'proceso', responsable: '', icono: '⚙️' }
   ]);
 
   // CÁLCULO DE ESTADO DERIVADO
@@ -32,133 +33,181 @@ export default function Edicion() {
         nombre: nombreProceso,
         bloque,
         nivel,
-        pasos,
+        pasos, // Incluye los nuevos campos: responsable e icono
         fechaCreacion: new Date()
       });
-      alert(`✅ Guardado con éxito: ${codigoSugerido}`);
-      // Opcional: Limpiar formulario
+
+      // Feedback profesional al usuario
+      alert(`✅ Proceso Maestro [${codigoSugerido}] guardado con éxito en Dreams Criteria`);
+      
+      // RESTAURADO: Limpieza del formulario respetando el nuevo esquema premium
       setNombreProceso('');
-      setPasos([{ id: Date.now(), texto: '', tipo: 'proceso' }]);
+      setPasos([
+        { id: Date.now(), texto: '', instruccion: '', tipo: 'proceso', responsable: '', icono: '⚙️' }
+      ]);
+
     } catch (error) {
-      console.error("Error al guardar: ", error);
-      alert("❌ Error al guardar");
+      console.error("Error al guardar:", error);
+      // RESTAURADO: Notificación de error al usuario
+      alert("❌ Error al guardar el proceso en la base de datos. Por favor, verifique su conexión.");
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <h1 className="text-3xl font-black text-slate-800 mb-2">Nuevo Proceso</h1>
-      <p className="text-slate-500 mb-8">Registre la estructura básica del proceso.</p>
-
-      <form onSubmit={guardarTodo} className="space-y-6">
-        {/* TARJETA 1: DATOS GENERALES */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="max-w-6xl mx-auto p-8 bg-slate-50 min-h-screen">
+      <form onSubmit={guardarTodo} className="space-y-8 pb-24">
+        
+        {/* CABECERA DE CONFIGURACIÓN: RESTAURADA Y MEJORADA */}
+        <div className="bg-dreams-blue p-8 rounded-[2.5rem] text-white shadow-premium relative overflow-hidden">
+          <div className="relative z-10">
+            <h1 className="text-3xl font-black tracking-tight mb-6 text-white/90">Configurador de Procesos</h1>
             
-            {/* Input Nombre */}
-            <div className="md:col-span-2">
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Nombre del Proceso</label>
-              <input 
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                placeholder="Ej. Ventas Mostrador"
-                value={nombreProceso}
-                onChange={(e) => setNombreProceso(e.target.value)}
-              />
-            </div>
-
-            {/* Código Preview */}
-            <div className="bg-slate-900 rounded-xl p-4 text-center flex flex-col justify-center">
-              <span className="text-slate-400 text-xs font-bold uppercase">Código Generado</span>
-              <span className="text-2xl font-mono text-blue-400 font-bold tracking-wider mt-1">
-                {codigoSugerido}
-              </span>
-            </div>
-
-            {/* Selectores */}
-            <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Bloque</label>
-              <select 
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 font-bold text-slate-700"
-                value={bloque}
-                onChange={(e) => setBloque(e.target.value)}
-              >
-                <option value="1">Bloque 1</option>
-                <option value="2">Bloque 2</option>
-                <option value="3">Bloque 3</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Nivel</label>
-              <select 
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 font-bold text-slate-700"
-                value={nivel}
-                onChange={(e) => setNivel(e.target.value)}
-              >
-                <option value="N0">N0 (Macro)</option>
-                <option value="N1">N1 (Sub)</option>
-                <option value="N2">N2 (Operativo)</option>
-                <option value="N3">N3 (Instrucción)</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* TARJETA 2: FLUJO DE ACTIVIDADES */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-          <h2 className="text-lg font-bold text-slate-700 mb-6 flex items-center gap-2">
-            <span className="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center text-sm">⚡</span>
-            Secuencia de Actividades
-          </h2>
-
-          <div className="space-y-3">
-            {pasos.map((paso, index) => (
-              <div key={paso.id} className="bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
-                
-                {/* CABECERA DEL PASO */}
-                <div className="flex gap-4 items-center mb-3">
-                  <span className="font-mono text-slate-400 font-bold text-xl">#{index + 1}</span>
-                  <input 
-                    className="flex-1 bg-white border border-slate-200 rounded-lg p-3 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500"
-                    value={paso.texto}
-                    onChange={(e) => actualizarPaso(paso.id, 'texto', e.target.value)}
-                    placeholder="Nombre corto de la actividad (Ej. Recibir Factura)"
-                  />
-                  <select 
-                    className="p-3 rounded-lg bg-white font-bold text-xs uppercase border border-slate-200 cursor-pointer"
-                    value={paso.tipo}
-                    onChange={(e) => actualizarPaso(paso.id, 'tipo', e.target.value)}
-                  >
-                    <option value="proceso">Acción ▢</option>
-                    <option value="decision">Decisión ◇</option>
-                  </select>
-                </div>
-
-                {/* CAMPO DE INSTRUCCIÓN DETALLADA (NUEVO) */}
-                <div className="pl-10">
-                  <label className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Instrucción de Trabajo</label>
-                  <textarea
-                    className="w-full mt-1 bg-white border border-slate-200 rounded-lg p-3 text-sm text-slate-600 outline-none focus:border-blue-400 min-h-20"
-                    placeholder="Describa detalladamente cómo se realiza esta actividad..."
-                    value={paso.instruccion || ''}
-                    onChange={(e) => actualizarPaso(paso.id, 'instruccion', e.target.value)}
-                  />
-                </div>
-
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              {/* 1. Nombre (Original restaurado) */}
+              <div className="md:col-span-1 space-y-2">
+                <label className="text-label-premium text-white/60">Nombre del Proceso</label>
+                <input 
+                  className="w-full bg-white/10 border border-white/20 rounded-xl p-3 outline-none focus:bg-white/20 transition-all text-white placeholder:text-white/30"
+                  value={nombreProceso}
+                  onChange={(e) => setNombreProceso(e.target.value)}
+                  placeholder="Ej. Reclutamiento"
+                />
               </div>
-            ))}
+
+              {/* 2. Bloque (RESTAURADO) */}
+              <div className="space-y-2">
+                <label className="text-label-premium text-white/60">Bloque de Negocio</label>
+                <select 
+                  className="w-full bg-white/10 border border-white/20 rounded-xl p-3 outline-none focus:bg-white/20 text-white cursor-pointer"
+                  value={bloque}
+                  onChange={(e) => setBloque(e.target.value)}
+                >
+                  <option value="1" className="text-slate-900">Bloque 1</option>
+                  <option value="2" className="text-slate-900">Bloque 2</option>
+                  <option value="3" className="text-slate-900">Bloque 3</option>
+                </select>
+              </div>
+
+              {/* 3. Nivel (Original restaurado) */}
+              <div className="space-y-2">
+                <label className="text-label-premium text-white/60">Nivel Jerárquico</label>
+                <select 
+                  className="w-full bg-white/10 border border-white/20 rounded-xl p-3 outline-none focus:bg-white/20 text-white cursor-pointer"
+                  value={nivel} onChange={(e) => setNivel(e.target.value)}
+                >
+                  <option value="N0" className="text-slate-900">Nivel 0: Estratégico</option>
+                  <option value="N1" className="text-slate-900">Nivel 1: Táctico</option>
+                  <option value="N2" className="text-slate-900">Nivel 2: Operativo</option>
+                </select>
+              </div>
+
+              {/* 4. Código (Previsualización Premium) */}
+              <div className="space-y-2 text-center">
+                <label className="text-label-premium text-white/60">Código ID</label>
+                <div className="p-3 bg-dreams-gold rounded-xl font-black text-white shadow-lg border border-white/20">
+                  {codigoSugerido}
+                </div>
+              </div>
+            </div>
           </div>
-          <button 
-            type="button" 
-            onClick={agregarPaso}
-            className="mt-6 w-full py-4 border-2 border-dashed border-slate-300 rounded-xl text-slate-400 font-bold hover:text-blue-500 hover:border-blue-500 transition-all"
-          >
-            + Añadir Siguiente Actividad
-          </button>
         </div>
 
-        <button type="submit" className="w-full bg-slate-900 text-white p-5 rounded-2xl font-black text-lg shadow-2xl hover:bg-blue-800 transition-transform active:scale-95">
-          GUARDAR PROCESO
+        {/* LISTADO DE ACTIVIDADES: FUSIÓN DE REGLAS ORIGINALES Y LOOK PREMIUM */}
+        <div className="space-y-6">
+          <h2 className="text-label-premium text-slate-400">Secuencia de Actividades Maestras</h2>
+          
+          {pasos.map((paso, index) => (
+            <div key={paso.id} className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 hover:shadow-premium transition-all group">
+              <div className="flex flex-col lg:flex-row gap-6">
+                
+                {/* Lado Izquierdo: Icono y Tipo */}
+                <div className="lg:w-1/4 space-y-4">
+                  <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Actividad #{index + 1}</span>
+                  <div className="flex gap-2">
+                    <select 
+                      className="bg-slate-100 p-2 rounded-lg text-lg cursor-pointer hover:bg-slate-200 transition-colors"
+                      value={paso.icono} onChange={(e) => actualizarPaso(paso.id, 'icono', e.target.value)}
+                    >
+                      <option value="⚙️">⚙️ Proceso</option>
+                      <option value="📝">📝 Registro</option>
+                      <option value="📧">📧 Email</option>
+                      <option value="🔍">🔍 Revisión</option>
+                      <option value="✅">✅ Aprobación</option>
+                      <option value="🚀">🚀 Lanzamiento</option>
+                    </select>
+                    <select 
+                      className="flex-1 bg-slate-900 text-white p-2 rounded-lg text-[10px] font-black uppercase tracking-tighter cursor-pointer"
+                      value={paso.tipo} onChange={(e) => actualizarPaso(paso.id, 'tipo', e.target.value)}
+                    >
+                      <option value="proceso">Acción ▢</option>
+                      <option value="decision">Validación ◇</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Centro: Texto y Responsable (Trazabilidad asegurada) */}
+                <div className="flex-1 space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-bold text-slate-400 uppercase">¿Qué se hace?</label>
+                      <input 
+                        className="w-full text-lg font-bold text-slate-800 border-b-2 border-slate-100 focus:border-dreams-gold outline-none pb-1 bg-transparent"
+                        placeholder="Título de la tarea..."
+                        value={paso.texto} onChange={(e) => actualizarPaso(paso.id, 'texto', e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-bold text-slate-400 uppercase">¿Quién lo hace?</label>
+                      <input 
+                        className="w-full text-sm font-medium text-slate-500 border-b-2 border-slate-100 focus:border-slate-300 outline-none pb-1 bg-transparent italic"
+                        placeholder="Cargo o Responsable..."
+                        value={paso.responsable} onChange={(e) => actualizarPaso(paso.id, 'responsable', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Instrucción (Regla original mantenida) */}
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-bold text-slate-400 uppercase">Instrucción Detallada (Know-How)</label>
+                    <textarea 
+                      className="w-full bg-slate-50 rounded-xl p-4 text-sm text-slate-600 outline-none focus:ring-1 focus:ring-slate-200 min-h-[80px]"
+                      placeholder="Escriba el paso a paso de esta actividad..."
+                      value={paso.instruccion || ''} 
+                      onChange={(e) => actualizarPaso(paso.id, 'instruccion', e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {/* Derecha: Acción Eliminar */}
+                <button 
+                  type="button"
+                  onClick={() => setPasos(pasos.filter(p => p.id !== paso.id))}
+                  className="text-slate-300 hover:text-red-500 transition-colors self-start p-2"
+                  title="Eliminar actividad"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Botón Añadir (Original mejorado) */}
+        <button 
+          type="button" 
+          onClick={agregarPaso}
+          className="w-full py-6 border-2 border-dashed border-slate-300 rounded-[2.5rem] text-slate-400 font-black text-sm uppercase tracking-widest hover:bg-white hover:border-dreams-gold hover:text-dreams-gold transition-all group"
+        >
+          <span className="group-hover:scale-125 transition-transform inline-block mr-2">+</span> 
+          Añadir Siguiente Actividad
+        </button>
+
+        {/* Botón Guardar (Restaurado y fijado) */}
+        <button 
+          type="submit" 
+          className="fixed bottom-8 right-8 bg-dreams-gold text-white px-12 py-5 rounded-full font-black text-lg shadow-premium hover:scale-105 active:scale-95 transition-all z-50 border border-white/20"
+        >
+          GUARDAR SISTEMA MAESTRO
         </button>
       </form>
     </div>

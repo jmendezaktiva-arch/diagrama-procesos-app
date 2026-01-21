@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { db } from '../firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import DiagramaAuto from '../components/DiagramaAuto'; 
-import html2pdf from 'html2pdf.js'; 
+import { toPng } from 'html-to-image';
 export default function Consulta() {
   const [procesos, setProcesos] = useState([]);
   const [procesoSeleccionado, setProcesoSeleccionado] = useState(null);
@@ -11,6 +11,7 @@ export default function Consulta() {
 
   // Referencia al "Molde" del PDF (el contenido invisible)
   const printRef = useRef();
+  const diagramRef = useRef(null);
 
   useEffect(() => {
     const obtenerProcesos = async () => {
@@ -27,16 +28,24 @@ export default function Consulta() {
   };
 
   // --- FUNCIÓN GENERADORA DE PDF ---
-  const descargarManual = () => {
-    const element = printRef.current; // Seleccionamos el molde invisible
-    const opt = {
-      margin:       0.5,
-      filename:     `Manual-${procesoSeleccionado.codigo}.pdf`,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2 }, // Mayor escala = Mejor calidad
-      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-    };
-    html2pdf().set(opt).from(element).save();
+  const descargarDocumentacionHD = async () => {
+    if (diagramRef.current === null) return;
+
+    // Capturamos el diagrama con calidad profesional (3x)
+    toPng(diagramRef.current, { 
+      cacheBust: true, 
+      pixelRatio: 3, 
+      backgroundColor: '#f8fafc' 
+    })
+      .then((dataUrl) => {
+        const link = document.createElement('a');
+        link.download = `Dreams-Criteria-${procesoSeleccionado.codigo}.png`;
+        link.href = dataUrl;
+        link.click();
+      })
+      .catch((err) => {
+        console.error('Error al generar la imagen premium:', err);
+      });
   };
 
   return (
@@ -52,7 +61,7 @@ export default function Consulta() {
         
         {procesoSeleccionado && (
           <button 
-            onClick={descargarManual}
+            onClick={descargarDocumentacionHD}
             className="bg-dreams-gold px-6 py-3 rounded-xl font-bold text-sm shadow-premium hover:scale-105 transition-transform text-white"
           >
             Descargar Documentación HD
@@ -89,7 +98,7 @@ export default function Consulta() {
           {procesoSeleccionado ? (
             <>
               {/* LIENZO DEL DIAGRAMA CON BORDE REDONDEADO PREMIUM */}
-              <div className="bg-white p-2 rounded-[2.5rem] shadow-premium border border-slate-200 overflow-hidden">
+              <div ref={diagramRef} className="bg-white p-10 rounded-[2.5rem] shadow-premium border border-slate-200 overflow-hidden">
                 <DiagramaAuto 
                   pasos={procesoSeleccionado.pasos} 
                   onNodeClick={alHacerClicEnNodo} 

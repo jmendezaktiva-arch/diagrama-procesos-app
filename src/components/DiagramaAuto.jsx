@@ -5,20 +5,49 @@ import '@xyflow/react/dist/style.css';
 import dagre from 'dagre';
 
 // --- DISEÑO DE NODOS PREMIUM DREAMS CRITERIA ---
+// --- DISEÑO DE NODOS PREMIUM DREAMS CRITERIA ---
 const ProcesoNode = ({ data }) => (
-  <div className="bg-dreams-gold px-5 py-4 rounded-xl shadow-premium text-center min-w-[200px] relative border border-white/20">
+  <div className="bg-dreams-gold px-5 py-4 rounded-2xl shadow-premium text-center min-w-[220px] relative border border-white/30 transition-all">
     <Handle type="target" position={Position.Left} className="opacity-0" />
-    <div className="text-[9px] uppercase font-black opacity-70 tracking-widest mb-1 text-white">Actividad</div>
-    <div className="text-sm font-extrabold leading-tight text-white">{data.label}</div>
+    
+    {/* Icono y Etiqueta Superior */}
+    <div className="flex justify-between items-center mb-2">
+      <span className="text-lg">{data.icono || '⚙️'}</span>
+      <span className="text-[8px] uppercase font-black opacity-60 tracking-[0.2em] text-white">Actividad</span>
+    </div>
+
+    {/* Título de la Actividad */}
+    <div className="text-sm font-extrabold leading-tight text-white mb-3">
+      {data.label}
+    </div>
+
+    {/* Responsable (Estilo Etiqueta Inferior) */}
+    {data.responsable && (
+      <div className="bg-black/20 rounded-lg py-1 px-2 border border-white/10">
+        <p className="text-[9px] font-medium text-white/90 italic truncate">
+          👤 {data.responsable}
+        </p>
+      </div>
+    )}
+
     <Handle type="source" position={Position.Right} className="opacity-0" />
   </div>
 );
 
 const DecisionNode = ({ data }) => (
-  <div className="bg-dreams-blue px-6 py-6 rounded-[2.5rem] shadow-premium text-center min-w-[200px] relative border border-amber-500/40">
+  <div className="bg-dreams-blue px-6 py-6 rounded-[2.5rem] shadow-premium text-center min-w-[220px] relative border border-amber-500/40">
     <Handle type="target" position={Position.Left} className="opacity-0" />
+    
+    <div className="text-lg mb-1">{data.icono || '🔍'}</div>
     <div className="text-[9px] uppercase font-black text-amber-500 tracking-widest mb-1">Validación</div>
-    <div className="text-sm font-extrabold leading-tight text-white italic">¿{data.label}?</div>
+    <div className="text-sm font-extrabold leading-tight text-white italic mb-2">¿{data.label}?</div>
+    
+    {data.responsable && (
+      <p className="text-[9px] font-bold text-amber-500/80 uppercase tracking-tighter">
+        Resp: {data.responsable}
+      </p>
+    )}
+
     <Handle type="source" position={Position.Right} className="opacity-0" />
   </div>
 );
@@ -71,10 +100,14 @@ export default function DiagramaAuto({ pasos, direction = 'LR', onNodeClick }) {
   useEffect(() => {
     if (!pasos || pasos.length === 0) return;
 
-    // 1. TRANSFORMAR TUS PASOS EN NODOS VISUALES
+    // 1. TRANSFORMAR PASOS EN NODOS (Ahora con datos completos)
     const misNodos = pasos.map((paso) => ({
       id: paso.id.toString(),
-      data: { label: paso.texto },
+      data: { 
+        label: paso.texto,
+        icono: paso.icono,
+        responsable: paso.responsable 
+      },
       position: { x: 0, y: 0 },
       type: paso.tipo === 'decision' ? 'decision' : 'proceso',
     }));
